@@ -55,6 +55,9 @@ java {
 
 tasks.withType(JavaCompile) {
   options.release = project.ext.release.majorVersion.toInteger()
+  options.compilerArgs += [
+    "-Xlint:deprecation",
+  ]
 }
 tasks.withType(GroovyCompile) {
   options.release = project.ext.release.majorVersion.toInteger()

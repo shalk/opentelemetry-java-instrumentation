@@ -5,7 +5,7 @@
 
 package io.opentelemetry.instrumentation.api.tracer;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Span.Kind;
 import io.opentelemetry.api.trace.SpanBuilder;
@@ -82,7 +82,7 @@ public abstract class HttpClientTracer<REQUEST, CARRIER, RESPONSE> extends BaseT
       throw new IllegalStateException(
           "getSetter() not defined but calling startScope(), either getSetter must be implemented or the scope should be setup manually");
     }
-    OpenTelemetry.getGlobalPropagators().getTextMapPropagator().inject(context, carrier, setter);
+    GlobalOpenTelemetry.getPropagators().getTextMapPropagator().inject(context, carrier, setter);
   }
 
   public void end(Context context, RESPONSE response) {

@@ -7,7 +7,7 @@ package io.opentelemetry.instrumentation.api.tracer;
 
 import static io.opentelemetry.api.trace.Span.Kind.CLIENT;
 
-import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
@@ -24,7 +24,7 @@ public abstract class DatabaseClientTracer<CONNECTION, QUERY> extends BaseTracer
   protected final Tracer tracer;
 
   public DatabaseClientTracer() {
-    tracer = OpenTelemetry.getGlobalTracer(getInstrumentationName(), getVersion());
+    tracer = GlobalOpenTelemetry.getTracer(getInstrumentationName(), getVersion());
   }
 
   public boolean shouldStartSpan(Context parentContext) {

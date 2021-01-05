@@ -6,6 +6,7 @@
 package io.opentelemetry.javaagent.tooling;
 
 import com.google.common.collect.ImmutableMap;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.baggage.propagation.W3CBaggagePropagator;
 import io.opentelemetry.api.trace.Span;
@@ -87,7 +88,7 @@ public class PropagatorsInitializer {
       textMapPropagators.add(propagators.get(0));
     }
     // Register it in the global propagators:
-    OpenTelemetry.setGlobalPropagators(
+    GlobalOpenTelemetry.setPropagators(
         ContextPropagators.create(TextMapPropagator.composite(textMapPropagators)));
   }
 
