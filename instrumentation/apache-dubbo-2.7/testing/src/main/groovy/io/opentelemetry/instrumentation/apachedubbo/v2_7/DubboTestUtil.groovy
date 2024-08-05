@@ -18,9 +18,11 @@ class DubboTestUtil {
   }
 
   static DubboBootstrap newDubboBootstrap(Object frameworkModel) {
+    // compatible with 2.7.x
     if (frameworkModel == null) {
       return DubboBootstrap.newInstance()
     }
+    // compatible with 3.0
     return DubboBootstrap.newInstance(frameworkModel)
   }
 }
