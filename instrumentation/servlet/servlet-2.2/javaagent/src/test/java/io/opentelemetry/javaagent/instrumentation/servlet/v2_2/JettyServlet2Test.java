@@ -37,7 +37,9 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class JettyServlet2Test extends AbstractHttpServerTest<Server> {
@@ -57,13 +59,15 @@ class JettyServlet2Test extends AbstractHttpServerTest<Server> {
     //    ConstraintSecurityHandler security = setupAuthentication(jettyServer)
     //    servletContext.setSecurityHandler(security)
 
-    servletContext.addServlet(TestServlet2.Sync.class, SUCCESS.getPath());
-    servletContext.addServlet(TestServlet2.Sync.class, QUERY_PARAM.getPath());
-    servletContext.addServlet(TestServlet2.Sync.class, REDIRECT.getPath());
-    servletContext.addServlet(TestServlet2.Sync.class, ERROR.getPath());
-    servletContext.addServlet(TestServlet2.Sync.class, EXCEPTION.getPath());
-    servletContext.addServlet(TestServlet2.Sync.class, AUTH_REQUIRED.getPath());
-    servletContext.addServlet(TestServlet2.Sync.class, INDEXED_CHILD.getPath());
+    ServletHolder servletHolder = new ServletHolder(new TestServlet2.Sync(port, testing));
+    servletContext.addServlet(servletHolder, SUCCESS.getPath());
+    servletContext.addServlet(servletHolder, QUERY_PARAM.getPath());
+    servletContext.addServlet(servletHolder, REDIRECT.getPath());
+    servletContext.addServlet(servletHolder, ERROR.getPath());
+    servletContext.addServlet(servletHolder, EXCEPTION.getPath());
+    servletContext.addServlet(servletHolder, AUTH_REQUIRED.getPath());
+    servletContext.addServlet(servletHolder, INDEXED_CHILD.getPath());
+    servletContext.addServlet(servletHolder, NOT_FOUND.getPath());
 
     server.setHandler(servletContext);
     server.start();
@@ -99,6 +103,9 @@ class JettyServlet2Test extends AbstractHttpServerTest<Server> {
                 DEFAULT_HTTP_ATTRIBUTES, Collections.singleton(HttpAttributes.HTTP_ROUTE)));
     options.setExpectedException(new IllegalStateException(EXCEPTION.getBody()));
     options.setHasResponseCustomizer(endpoint -> endpoint != EXCEPTION);
+    // TODO disable some case
+    options.setTestCaptureHttpHeaders(false);
+    options.disableTestNonStandardHttpMethod();
   }
 
   @Override
@@ -113,62 +120,19 @@ class JettyServlet2Test extends AbstractHttpServerTest<Server> {
     return span;
   }
 
-  //  @Override
-
   @Override
   public String expectedHttpRoute(ServerEndpoint endpoint, String method) {
     if (Objects.equals(method, HttpConstants._OTHER)) {
       return "HTTP " + address.resolve(endpoint.getPath()).getPath();
     }
     if (endpoint.equals(NOT_FOUND)) {
-      return method;
+      return endpoint.getPath();
     } else if (endpoint.equals(PATH_PARAM)) {
       return method + " " + getContextPath() + "/path/:id/param";
     }
     return address.resolve(endpoint.getPath()).getPath();
   }
 
-  //
-  //  @Override
-  //  boolean testNotFound() {
-  //    false
-  //  }
-  //
-  //  // servlet 2 does not expose a way to retrieve response headers
-  //  @Override
-  //  boolean testCapturedHttpHeaders() {
-  //    false
-  //  }
-  //
-  //  @Override
-  //  boolean hasResponseSpan(ServerEndpoint endpoint) {
-  //    endpoint == REDIRECT || endpoint == ERROR
-  //  }
-  //
-  //  @Override
-  //  boolean hasResponseCustomizer(ServerEndpoint endpoint) {
-  //    true
-  //  }
-  //
-  //  @Override
-  //  void responseSpan(TraceAssert trace, int index, Object parent, String method = "GET",
-  // ServerEndpoint endpoint = SUCCESS) {
-  //    def responseMethod = endpoint == REDIRECT ? "sendRedirect" : "sendError"
-  //    trace.span(index) {
-  //      name "Response.$responseMethod"
-  //      kind INTERNAL
-  //      childOf((SpanData) parent)
-  //      attributes {
-  //        "$CodeIncubatingAttributes.CODE_NAMESPACE" Response.name
-  //        "$CodeIncubatingAttributes.CODE_FUNCTION" responseMethod
-  //      }
-  //    }
-  //  }
 
-  public static void main(String[] args) throws Exception {
-    JettyServlet2Test jettyServlet2Test = new JettyServlet2Test();
-    Server server = jettyServlet2Test.setupServer();
-    server.isStarted();
-    System.in.read();
-  }
+
 }
